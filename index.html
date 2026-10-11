@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydration Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: single centred column, glass + count side by side as the hero, controls directly under, then stats and history */
+:root{
+  --bg:#eef5f7; --surface:#ffffff; --ink:#0d2a33; --muted:#557079; --line:#d3e3e8;
+  --water:#1b8fb8; --water-deep:#0b5f80; --water-light:#8fd3ea; --glass:#c9dde3;
+  --done:#2f8a5b; --focus:#0b5f80;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1a20; --surface:#11262e; --ink:#e4f1f4; --muted:#93afb7; --line:#22414b;
+  --water:#3ab0d6; --water-deep:#1a7aa0; --water-light:#7fd0ea; --glass:#3a5a64;
+  --done:#5cc48c; --focus:#7fd0ea; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1a20; --surface:#11262e; --ink:#e4f1f4; --muted:#93afb7; --line:#22414b;
+  --water:#3ab0d6; --water-deep:#1a7aa0; --water-light:#7fd0ea; --glass:#3a5a64;
+  --done:#5cc48c; --focus:#7fd0ea; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:30rem;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+header{display:flex;align-items:baseline;justify-content:space-between}
+h1{font-family:var(--display);font-weight:700;font-size:1.6rem;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.85rem}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,.bar:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.daynav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;text-align:center}
+.daynav > button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.1rem}
+.daynav > button:disabled{opacity:.35;cursor:default}
+.dayname{font-family:var(--display);font-weight:700;font-size:1.15rem}
+.daydate{color:var(--muted);font-size:.85rem}
+.today-link{display:block;margin:2px auto 0;background:none;border:0;color:var(--water-deep);text-decoration:underline;font-size:.85rem;padding:2px 4px;white-space:nowrap}
+.today-link[hidden]{display:none}
+:root[data-theme="dark"] .today-link{color:var(--water-light)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .today-link{color:var(--water-light)}}
+
+.hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.hero svg{width:150px;height:auto;display:block}
+.count{font-family:var(--display);font-weight:700;line-height:1}
+.count .n{font-size:4.2rem;font-variant-numeric:tabular-nums}
+.count .of{font-size:1.5rem;color:var(--muted)}
+.status{margin-top:8px;font-size:.95rem;color:var(--muted)}
+.status.done{color:var(--done);font-weight:700}
+.ml{color:var(--muted);font-size:.8rem;margin-top:2px}
+
+.controls{display:grid;grid-template-columns:56px 1fr;gap:12px}
+.minus{height:56px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-size:1.6rem}
+.minus:disabled{opacity:.35;cursor:default}
+.add{height:56px;border-radius:16px;border:0;background:var(--water-deep);color:#fff;font-weight:700;font-size:1.05rem}
+.add:active{transform:translateY(1px)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.goalrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.goalrow label{font-weight:700}
+.goalrow small{display:block;color:var(--muted);font-weight:400;font-size:.8rem}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stepper button{width:40px;height:40px;border:0;background:transparent;font-size:1.2rem}
+.stepper input{width:3rem;height:40px;border:0;border-inline:1px solid var(--line);text-align:center;font:inherit;font-weight:700;background:transparent;color:var(--ink);-moz-appearance:textfield}
+.stepper input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.stat{padding-inline:12px;border-left:1px solid var(--line);min-width:0}
+.stat:first-child{border-left:0;padding-left:0}
+.stat .k{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--display);font-weight:700;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat .h{font-size:.75rem;color:var(--muted)}
+
+.charthead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.charthead h2{font-family:var(--display);font-size:1.05rem;margin:0}
+.charthead span{font-size:.8rem;color:var(--muted)}
+#chart{width:100%;height:auto;display:block}
+#chart text{fill:var(--muted);font-family:var(--body)}
+.bar{cursor:pointer}
+.empty{font-size:.85rem;color:var(--muted);margin-top:8px}
+.foot{font-size:.78rem;color:var(--muted);text-align:center}
+#water{transition:transform .5s cubic-bezier(.3,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){#water{transition:none}.wave{animation:none!important}}
+.wave{animation:wave 4s linear infinite}
+@keyframes wave{from{transform:translateX(0)}to{transform:translateX(-60px)}}
+@media (max-width:360px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Hydration Hero</h1>
+    <span class="sub">1 glass ≈ 250 ml</span>
+  </header>
+
+  <nav class="daynav" aria-label="Choose day">
+    <button id="prev" aria-label="Previous day">‹</button>
+    <div>
+      <div class="dayname" id="dayname">Today</div>
+      <div class="daydate"><span id="daydate"></span> <button class="today-link" id="jumpToday" hidden>Back to today</button></div>
+    </div>
+    <button id="next" aria-label="Next day">›</button>
+  </nav>
+
+  <section class="hero" aria-live="polite">
+    <svg viewBox="0 0 120 160" role="img" aria-labelledby="glassLabel">
+      <title id="glassLabel">Glass filled to match progress</title>
+      <defs>
+        <clipPath id="glassClip"><path d="M14 10 L106 10 L96 150 Q95 154 91 154 L29 154 Q25 154 24 150 Z"/></clipPath>
+        <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--water-light)"/><stop offset="1" stop-color="var(--water-deep)"/>
+        </linearGradient>
+      </defs>
+      <g clip-path="url(#glassClip)">
+        <g id="water" style="transform:translateY(144px)">
+          <path class="wave" fill="var(--water)" d="M0 10 Q15 4 30 10 T60 10 T90 10 T120 10 T150 10 T180 10 L180 160 L0 160 Z"/>
+          <rect x="0" y="14" width="180" height="160" fill="url(#wg)"/>
+        </g>
+      </g>
+      <path d="M14 10 L106 10 L96 150 Q95 154 91 154 L29 154 Q25 154 24 150 Z" fill="none" stroke="var(--glass)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M26 22 L33 140" stroke="var(--glass)" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+    </svg>
+    <div>
+      <div class="count"><span class="n" id="count">0</span> <span class="of">/ <span id="goalShow">8</span></span></div>
+      <div class="ml" id="ml">0 ml</div>
+      <div class="status" id="status">Empty glass. Time for a drink.</div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button class="minus" id="minus" aria-label="Remove a glass">−</button>
+    <button class="add" id="add">+ Add a glass</button>
+  </div>
+
+  <div class="panel goalrow">
+    <label for="goal">Daily goal<small>Glasses per day, from this day on</small></label>
+    <div class="stepper">
+      <button id="goalDown" aria-label="Lower goal">−</button>
+      <input id="goal" type="number" inputmode="numeric" min="1" max="30" value="8">
+      <button id="goalUp" aria-label="Raise goal">+</button>
+    </div>
+  </div>
+
+  <div class="panel stats">
+    <div class="stat"><div class="k">7-day avg</div><div class="v" id="avg7">–</div><div class="h" id="avg7h">glasses/day</div></div>
+    <div class="stat"><div class="k">30-day avg</div><div class="v" id="avg30">–</div><div class="h" id="avg30h">glasses/day</div></div>
+    <div class="stat"><div class="k">Goals hit</div><div class="v" id="hits">–</div><div class="h">last 7 days</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="charthead"><h2>Last 14 days</h2><span>Tap a bar to open that day</span></div>
+    <svg id="chart" viewBox="0 0 340 170" role="img" aria-label="Glasses per day for the last 14 days"></svg>
+    <p class="empty" id="empty" hidden>No glasses logged yet. Bars appear here as you add them.</p>
+  </div>
+
+  <p class="foot">Saved in this browser only. Keyboard: + / − to log, ← / → to change day.</p>
+</div>
+
+<script>
+(function(){
+  const KEY='hydration-hero-v1';
+  let store={days:{},goal:8};   // days: {'YYYY-MM-DD': {count, goal}}
+  try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.days) store=s;}catch(e){}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+
+  const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+  const shift=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+  let cur=today();
+
+  // goal that applies to a day: its own snapshot if logged, else current goal
+  const goalFor=k=>(store.days[k]&&store.days[k].goal)||store.goal;
+  const countFor=k=>(store.days[k]?store.days[k].count:0);
+
+  const $=id=>document.getElementById(id);
+  const fmtDate=d=>d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  function label(d){
+    const diff=Math.round((today()-d)/864e5);
+    if(diff===0) return 'Today';
+    if(diff===1) return 'Yesterday';
+    return d.toLocaleDateString('en-GB',{weekday:'long'});
+  }
+
+  function setCount(n){
+    const k=iso(cur);
+    n=Math.max(0,Math.min(99,n));
+    store.days[k]={count:n,goal:goalFor(k)};
+    if(n===0) delete store.days[k];
+    save(); render();
+  }
+
+  function avg(n){
+    // average across days you logged in the window, so a new user isn't penalised for days before they started
+    let sum=0,logged=0,hits=0;
+    for(let i=0;i<n;i++){const k=iso(shift(today(),-i)); if(store.days[k]){sum+=store.days[k].count;logged++; if(store.days[k].count>=store.days[k].goal) hits++;}}
+    return {v:logged?sum/logged:null,logged,hits};
+  }
+
+  function render(){
+    const k=iso(cur), c=countFor(k), g=goalFor(k), isToday=k===iso(today());
+    $('dayname').textContent=label(cur);
+    $('daydate').textContent=fmtDate(cur);
+    $('jumpToday').hidden=isToday;
+    $('next').disabled=isToday;
+    $('count').textContent=c;
+    $('goalShow').textContent=g;
+    $('ml').textContent=`${(c*250).toLocaleString('en-GB')} ml of ${(g*250).toLocaleString('en-GB')} ml`;
+    $('minus').disabled=c===0;
+    $('goal').value=g;
+
+    const pct=Math.min(1,c/g);
+    // fillable height ~144 units (y 10..154); translate water down by the empty part
+    $('water').style.transform=`translateY(${(1-pct)*144 - 4*(pct>0)}px)`;
+
+    const st=$('status'); st.classList.toggle('done',c>=g);
+    const left=g-c;
+    st.textContent = c===0 ? (isToday?'Empty glass. Time for a drink.':'Nothing logged this day.')
+      : c>=g ? (c>g?`Goal reached, plus ${c-g} extra.`:'Goal reached.')
+      : '';
+    st.hidden = st.textContent==='';
+
+    const a7=avg(7),a30=avg(30);
+    $('avg7').textContent=a7.v==null?'–':a7.v.toFixed(1);
+    $('avg7h').textContent=a7.logged?`over ${a7.logged} logged day${a7.logged>1?'s':''}`:'no days logged';
+    $('avg30').textContent=a30.v==null?'–':a30.v.toFixed(1);
+    $('avg30h').textContent=a30.logged?`over ${a30.logged} logged day${a30.logged>1?'s':''}`:'no days logged';
+    $('hits').textContent=`${a7.hits}/7`;
+    drawChart();
+  }
+
+  function drawChart(){
+    const svg=$('chart'), W=340,H=170,L=26,R=6,T=10,B=26;
+    const days=[...Array(14)].map((_,i)=>shift(today(),i-13));
+    const vals=days.map(d=>countFor(iso(d)));
+    const goal=store.goal;
+    const max=Math.max(goal,...vals,4);
+    const top=Math.ceil(max/2)*2;
+    const y=v=>T+(H-T-B)*(1-v/top);
+    const bw=(W-L-R)/14;
+    let s='';
+    [0,top/2,top].forEach(t=>{s+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(t)+4}" font-size="10" text-anchor="end">${t}</text>`});
+    s+=`<line x1="${L}" x2="${W-R}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--done)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${W-R}" y="${y(goal)-4}" font-size="10" text-anchor="end" style="fill:var(--done)">goal ${goal}</text>`;
+    const sel=iso(cur);
+    days.forEach((d,i)=>{
+      const k=iso(d),v=vals[i],x=L+i*bw+bw*0.18,w=bw*0.64;
+      const hitGoal=v>=goalFor(k)&&v>0;
+      const fill=hitGoal?'var(--water-deep)':'var(--water-light)';
+      const h=Math.max(v?2:0,(H-T-B)*(v/top));
+      const isSel=k===sel;
+      s+=`<g class="bar" tabindex="0" role="button" data-k="${k}" aria-label="${fmtDate(d)}: ${v} glasses">
+        <rect x="${L+i*bw}" y="${T}" width="${bw}" height="${H-T-B}" fill="transparent"/>
+        ${isSel?`<rect x="${L+i*bw+1}" y="${T}" width="${bw-2}" height="${H-T-B}" rx="4" fill="var(--line)" opacity=".55"/>`:''}
+        <rect x="${x}" y="${y(v)}" width="${w}" height="${h}" rx="3" fill="${fill}"/>
+        <text x="${x+w/2}" y="${H-B+14}" font-size="9.5" text-anchor="middle" style="${isSel?'fill:var(--ink);font-weight:700':''}">${d.toLocaleDateString('en-GB',{weekday:'narrow'})}</text>
+      </g>`;
+    });
+    svg.innerHTML=s;
+    $('empty').hidden=vals.some(v=>v>0);
+    svg.querySelectorAll('.bar').forEach(b=>{
+      const go=()=>{const [Y,M,D]=b.dataset.k.split('-').map(Number);cur=new Date(Y,M-1,D);render()};
+      b.addEventListener('click',go);
+      b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});
+    });
+  }
+
+  function setGoal(n){
+    n=Math.max(1,Math.min(30,Math.round(n)||1));
+    store.goal=n;
+    const k=iso(cur); if(store.days[k]) store.days[k].goal=n;   // update the viewed day too
+    save(); render();
+  }
+
+  $('add').onclick=()=>setCount(countFor(iso(cur))+1);
+  $('minus').onclick=()=>setCount(countFor(iso(cur))-1);
+  $('prev').onclick=()=>{cur=shift(cur,-1);render()};
+  $('next').onclick=()=>{if(iso(cur)!==iso(today())){cur=shift(cur,1);render()}};
+  $('jumpToday').onclick=()=>{cur=today();render()};
+  $('goalUp').onclick=()=>setGoal(goalFor(iso(cur))+1);
+  $('goalDown').onclick=()=>setGoal(goalFor(iso(cur))-1);
+  $('goal').addEventListener('change',e=>setGoal(+e.target.value));
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT') return;
+    if(e.key==='+'||e.key==='=') $('add').click();
+    else if(e.key==='-') $('minus').click();
+    else if(e.key==='ArrowLeft') $('prev').click();
+    else if(e.key==='ArrowRight') $('next').click();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
